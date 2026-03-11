@@ -1,1 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成語煉金術：蒸氣核心重啟</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Noto+Serif+TC:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #ffcc00; --bronze: #cd7f32; --iron: #3d3d3d;
+            --steam-blue: #00d4ff; --danger: #ff4444; --brass: #b87333;
+        }
 
+        body {
+            background-color: #0a0a0a;
+            background-image: radial-gradient(circle at center, rgba(184, 115, 51, 0.2) 0%, transparent 80%),
+                              url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+            color: #e0e0e0; margin: 0; font-family: 'Noto Serif TC', serif;
+            display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden;
+        }
+
+        #main-container {
+            width: 920px; background: #1a1510; border: 8px double var(--bronze);
+            padding: 30px; position: relative; border-radius: 10px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.9), inset 0 0 30px rgba(205, 127, 50, 0.1);
+        }
+
+        h1 {
+            font-family: 'Special Elite', system-ui; font-size: 3rem; color: var(--gold);
+            text-align: center; margin: 0 0 15px 0; letter-spacing: 3px;
+        }
+
+        /* 虛擬鍵盤 */
+        .keyboard { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; margin: 15px auto; max-width: 700px; }
+        .key {
+            background: linear-gradient(145deg, #443322, #221a10);
+            border: 1px solid var(--bronze); color: var(--gold);
+            padding: 10px; cursor: pointer; font-family: 'Special Elite';
+            font-weight: bold; font-size: 1.2rem; text-align: center;
+        }
+        .key:active { transform: scale(0.95); background: var(--gold); color: #000; }
+        .key.wide { grid-column: span 2; background: #5a221a; color: #fff; }
+
+        /* 排行榜 */
+        .leaderboard {
+            background: rgba(0,0,0,0.5); border: 2px solid var(--iron);
+            margin-top: 15px; padding: 10px; border-radius: 5px; max-height: 120px; overflow-y: auto;
+        }
+        .leader-item {
+            display: flex; justify-content: space-between; padding: 5px 15px;
+            border-bottom: 1px solid #333; font-family: 'Special Elite'; color: var(--steam-blue);
+        }
+
+        /* 碎片樣式 */
+        .chip {
+            background: linear-gradient(135deg, #4b3621, #2b1d0e);
+            border: 2px solid var(--bronze); color: var(--gold);
+            padding: 15px 25px; font-size: 1.5rem; cursor: grab;
+            border-radius: 3px; box-shadow: 3px 3px 0px #000;
+        }
+
+        .status-panel {
+            display: flex; justify-content: space-between; border-bottom: 2px solid var(--bronze);
+            padding-bottom: 10px; margin-bottom: 20px; align-items: center;
+        }
+        .timer { font-family: 'Special Elite'; font-size: 2.5rem; color: var(--steam-blue); }
+
+        /* 按鈕樣式 */
+        .btn-action {
+            width: 100%; background: linear-gradient(var(--bronze), var(--brass));
+            border: none; border-bottom: 5px solid #5a3e1a; color: white;
+            font-size: 1.8rem; padding: 15px; cursor: pointer; font-weight: bold;
+        }
+        .btn-action:hover { filter: brightness(1.2); }
+
+        /* 返回按鈕 (小而精緻) */
+        .btn-back {
+            background: #5a221a; border: 1px solid var(--danger); color: white;
+            padding: 5px 15px; cursor: pointer; font-family: 'Special Elite';
+            font-size: 0.9rem; margin-bottom: 10px;
+        }
+
+        .hidden { display: none; }
+        .correct-burst { animation: burst 0.4s ease-out; }
+        @keyframes burst { 0% { box-shadow: 0 0 0px var(--steam-blue); } 100% { box-shadow: 0 0 60px var(--steam-blue); } }
+    </style>
+</head>
+<body>
+
+    <div id="main-container">
+        <div id="screen-login">
+            <h1>⚙️ LOGOS FORGE ⚙️</h1>
+            <div style="text-align:center; margin-bottom:10px;">
+                <input type="text" id="p-name" readonly placeholder="IDENT-ID" 
+                       style="background:#000; border:2px solid var(--bronze); color:var(--gold); padding:10px; font-size:2rem; width:80%; text-align:center;">
+            </div>
+            
+            <div class="keyboard" id="kb-container"></div>
+
+            <div style="display:flex; justify-content:center; gap:10px; margin:15px 0;">
+                <button class="key" onclick="setDiff(3, this)">低壓(3)</button>
+                <button class="key" style="background:var(--bronze); color:white" id="def-diff" onclick="setDiff(4, this)">常壓(4)</button>
+                <button class="key" onclick="setDiff(5, this)">高壓(5)</button>
+                <button class="key" onclick="setDiff(6, this)">超壓(6)</button>
+            </div>
+
+            <button class="btn-action" onclick="startGame()">核心點火 (START)</button>
+            
+            <div class="leaderboard" id="leader-board-list"></div>
+        </div>
+
+        <div id="screen-game" class="hidden">
+            <div style="display:flex; justify-content:flex-start;">
+                <button class="btn-back" onclick="quitGame()">◀ 終止煉金並返回大廳</button>
+            </div>
+            <div class="status-panel">
+                <div id="timer" class="timer">0.00s</div>
+                <div style="text-align:right;">
+                    <span id="user-tag" style="color:var(--gold)"></span><br>
+                    <span id="lvl-tag" style="color:var(--bronze)">LVL: 1/10</span>
+                </div>
+            </div>
+            <div id="drop-zone" style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center; min-height:180px; align-items:center;"></div>
+            <button class="btn-action" onclick="verifyLogic()">文字同步 (SYNC)</button>
+        </div>
+
+        <div id="screen-end" class="hidden">
+            <h1 style="color:var(--steam-blue)">校準完成！</h1>
+            <p id="final-stat" style="text-align:center; font-size:2.5rem; color:var(--gold)"></p>
+            <button class="btn-action" onclick="location.reload()">重新啟動動力核心</button>
+        </div>
+    </div>
+
+    <audio id="lobby-bgm" loop src="lobby.mp3"></audio>
+    <audio id="game-bgm" loop src="bgm.mp3"></audio>
+
+    <script src="data.js"></script>
+    <script>
+        let diff = 4;
+        let step = 0;
+        let quests = [];
+        let timerStart, timerInterval;
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        const lobbyBgm = document.getElementById('lobby-bgm');
+        const gameBgm = document.getElementById('game-bgm');
+
+        // 音量初始化
+        lobbyBgm.volume = 0.4;
+        gameBgm.volume = 0.3;
+
+        // --- 虛擬音效 (放大音量) ---
+        function playSfx(win) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = win ? 'triangle' : 'sawtooth';
+            osc.frequency.setValueAtTime(win ? 220 : 110, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime); // 調大音效
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.6);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.6);
+        }
+
+        // --- 鍵盤與大廳音樂觸發 ---
+        const keys = "QWERTYUIOPASDFGHJKLZXCVBNM".split("");
+        const kb = document.getElementById('kb-container');
+        keys.forEach(k => {
+            const b = document.createElement('div');
+            b.className = 'key'; b.innerText = k;
+            b.onclick = () => { 
+                playSfx(true); 
+                document.getElementById('p-name').value += k;
+                // 瀏覽器通常阻擋自動播放，點擊鍵盤時啟動大廳音樂
+                if(lobbyBgm.paused) lobbyBgm.play(); 
+            };
+            kb.appendChild(b);
+        });
+        const del = document.createElement('div');
+        del.className = 'key wide'; del.innerText = "DELETE";
+        del.onclick = () => { let v = document.getElementById('p-name').value; document.getElementById('p-name').value = v.slice(0,-1); };
+        kb.appendChild(del);
+
+        // --- 排行榜 ---
+        function updateLeaderboardUI() {
+            const list = JSON.parse(localStorage.getItem('steam_rank') || "[]");
+            const container = document.getElementById('leader-board-list');
+            container.innerHTML = '<div style="text-align:center; color:var(--bronze); font-size:0.8rem;">歷史最佳紀錄 (RANKING)</div>';
+            list.slice(0, 3).forEach((item, idx) => {
+                container.innerHTML += `<div class="leader-item"><span>#${idx+1} ${item.name}</span><span>${item.time}s</span></div>`;
+            });
+        }
+        updateLeaderboardUI();
+
+        function saveScore(name, time) {
+            let list = JSON.parse(localStorage.getItem('steam_rank') || "[]");
+            list.push({name, time: parseFloat(time)});
+            list.sort((a,b) => a.time - b.time);
+            localStorage.setItem('steam_rank', JSON.stringify(list.slice(0, 10)));
+        }
+
+        // --- 遊戲核心 ---
+        function setDiff(v, el) {
+            diff = v;
+            document.querySelectorAll('#screen-login .key').forEach(b => {
+                if(!b.classList.contains('wide')) b.style.background = "";
+            });
+            el.style.background = "var(--bronze)"; el.style.color = "white";
+        }
+
+        function startGame() {
+            const name = document.getElementById('p-name').value;
+            if(!name) return alert("請輸入煉金師代號！");
+            
+            // 音樂切換
+            lobbyBgm.pause();
+            gameBgm.currentTime = 0; // 核心要求：重頭開始
+            gameBgm.play();
+
+            document.getElementById('screen-login').classList.add('hidden');
+            document.getElementById('screen-game').classList.remove('hidden');
+            document.getElementById('user-tag').innerText = "煉金師: " + name;
+
+            step = 0; // 重置等級
+            quests = idiomData.sort(() => 0.5 - Math.random()).slice(0, 10);
+            timerStart = Date.now();
+            timerInterval = setInterval(() => {
+                document.getElementById('timer').innerText = ((Date.now()-timerStart)/1000).toFixed(2) + "s";
+            }, 50);
+            loadNext();
+        }
+
+        function loadNext() {
+            const zone = document.getElementById('drop-zone');
+            zone.innerHTML = '';
+            const raw = quests[step];
+            document.getElementById('lvl-tag').innerText = `CORE LVL: ${step + 1}/10`;
+
+            let len = Math.floor(raw.length / diff);
+            let chunks = [];
+            for(let i=0; i<diff; i++) {
+                chunks.push(i === diff-1 ? raw.substring(i*len) : raw.substring(i*len, (i+1)*len));
+            }
+            chunks.sort(() => 0.5 - Math.random()).forEach(t => {
+                const div = document.createElement('div');
+                div.className = 'chip'; div.innerText = t;
+                zone.appendChild(div);
+            });
+            new Sortable(zone, { animation: 150 });
+        }
+
+        function verifyLogic() {
+            const user = Array.from(document.querySelectorAll('.chip')).map(c => c.innerText).join('');
+            if(user === quests[step]) {
+                playSfx(true);
+                step++;
+                document.getElementById('main-container').classList.add('correct-burst');
+                setTimeout(() => {
+                    document.getElementById('main-container').classList.remove('correct-burst');
+                    if(step < 10) loadNext(); else finishGame();
+                }, 400);
+            } else {
+                playSfx(false);
+                document.body.style.backgroundColor = "#300";
+                setTimeout(() => document.body.style.backgroundColor = "#0a0a0a", 200);
+            }
+        }
+
+        function quitGame() {
+            if(confirm("⚠️ 蒸汽壓力正在流失！你確定要放棄目前的同步並返回大廳嗎？")) {
+                clearInterval(timerInterval);
+                gameBgm.pause();
+                lobbyBgm.currentTime = 0;
+                lobbyBgm.play();
+                document.getElementById('screen-game').classList.add('hidden');
+                document.getElementById('screen-login').classList.remove('hidden');
+            }
+        }
+
+        function finishGame() {
+            clearInterval(timerInterval);
+            const finalTime = document.getElementById('timer').innerText;
+            const name = document.getElementById('p-name').value;
+            saveScore(name, finalTime.replace('s', ''));
+            
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-end').classList.remove('hidden');
+            document.getElementById('final-stat').innerText = "耗時: " + finalTime;
+            updateLeaderboardUI();
+        }
+    </script>
+</body>
+</html>
