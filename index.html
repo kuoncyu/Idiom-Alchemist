@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>成語煉金術：精密校準版</title>
+    <title>成語煉金術：顯影增益版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Noto+Serif+TC:wght@700&display=swap" rel="stylesheet">
     <style>
@@ -21,7 +21,7 @@
         }
 
         #main-container {
-            width: 920px; min-height: 600px; background: #1a1510; border: 8px double var(--bronze);
+            width: 920px; min-height: 650px; background: #1a1510; border: 8px double var(--bronze);
             padding: 30px; position: relative; border-radius: 10px;
             box-shadow: 0 0 50px rgba(0,0,0,0.9), inset 0 0 30px rgba(205, 127, 50, 0.1);
             display: flex; flex-direction: column; justify-content: center;
@@ -44,7 +44,7 @@
         .key:active { transform: scale(0.95); background: var(--gold); color: #000; }
         .key.wide { grid-column: span 2; background: #5a221a; color: #fff; }
 
-        /* 難度調整按鈕專屬樣式 */
+        /* 難度調整 */
         .diff-btn {
             background: #2b231a; border: 2px solid var(--iron); color: #888;
             padding: 10px 20px; cursor: pointer; font-family: 'Special Elite';
@@ -55,13 +55,29 @@
             box-shadow: 0 0 15px var(--bronze);
         }
 
-        .status-panel {
-            display: flex; justify-content: space-between; border-bottom: 2px solid var(--bronze);
-            padding-bottom: 10px; margin-bottom: 20px; align-items: center;
+        /* 排行榜視覺強化 */
+        .rank-container {
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid var(--bronze);
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: inset 0 0 20px rgba(205, 127, 50, 0.2);
         }
-        .timer { font-family: 'Special Elite'; font-size: 2.5rem; color: var(--steam-blue); }
+        .rank-title {
+            text-align: center; color: var(--gold); font-size: 1.2rem;
+            margin-bottom: 10px; border-bottom: 1px solid var(--iron);
+            padding-bottom: 5px; letter-spacing: 2px;
+        }
+        .rank-item {
+            display: flex; justify-content: space-between; padding: 6px 15px;
+            font-family: 'Special Elite'; font-size: 1.1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .rank-name { color: #ffffff; text-shadow: 0 0 5px rgba(255,255,255,0.3); }
+        .rank-time { color: var(--steam-blue); font-weight: bold; }
 
-        /* 碎片樣式 */
+        /* 遊戲組件 */
         .chip {
             background: linear-gradient(135deg, #4b3621, #2b1d0e);
             border: 2px solid var(--bronze); color: var(--gold);
@@ -118,15 +134,16 @@
             </div>
 
             <button class="btn-action" onclick="startGame()">同步程序啟動 (START)</button>
-            <div id="leader-board-list" style="margin-top:20px; font-size:0.8rem; color:var(--iron);"></div>
+            
+            <div class="rank-container" id="lobby-rank"></div>
         </div>
 
         <div id="screen-game" class="hidden">
             <div style="display:flex; justify-content:flex-start;">
                 <button class="btn-back" onclick="quitGame()">◀ 終止煉金並返回大廳</button>
             </div>
-            <div class="status-panel">
-                <div id="timer" class="timer">0.00s</div>
+            <div style="display: flex; justify-content: space-between; border-bottom: 2px solid var(--bronze); padding-bottom: 10px; margin-bottom: 20px; align-items: center;">
+                <div id="timer" style="font-family: 'Special Elite'; font-size: 2.5rem; color: var(--steam-blue);">0.00s</div>
                 <div style="text-align:right;">
                     <span id="user-tag" style="color:var(--gold)"></span><br>
                     <span id="lvl-tag" style="color:var(--bronze)">LVL: 1/10</span>
@@ -138,8 +155,11 @@
 
         <div id="screen-end" class="hidden">
             <h1 style="color:var(--steam-blue)">校準完成！</h1>
-            <p id="final-stat" style="text-align:center; font-size:2.5rem; color:var(--gold)"></p>
-            <button class="btn-action" onclick="location.reload()">重新啟動動力核心</button>
+            <p id="final-stat" style="text-align:center; font-size:2.5rem; color:var(--gold); margin-bottom: 10px;"></p>
+            
+            <div class="rank-container" id="end-rank"></div>
+            
+            <button class="btn-action" style="margin-top:20px;" onclick="location.reload()">重新啟動動力核心</button>
         </div>
     </div>
 
@@ -180,7 +200,6 @@
             updateLeaderboardUI();
         }
 
-        // --- 難度切換修正 ---
         function setDiff(v, el) {
             playSfx(true);
             diff = v;
@@ -207,7 +226,7 @@
             if(!name) return alert("請輸入煉金師代號！");
             
             lobbyBgm.pause();
-            gameBgm.currentTime = 0; // 戰鬥音樂重新開始
+            gameBgm.currentTime = 0;
             gameBgm.play();
 
             document.getElementById('screen-login').classList.add('hidden');
@@ -229,7 +248,6 @@
             const raw = quests[step];
             document.getElementById('lvl-tag').innerText = `CORE LVL: ${step + 1}/10`;
 
-            // 確保難度正確應用
             let len = Math.max(1, Math.floor(raw.length / diff));
             let chunks = [];
             for(let i=0; i<diff; i++) {
@@ -260,6 +278,26 @@
             }
         }
 
+        function finishGame() {
+            clearInterval(timerInterval);
+            const finalTimeStr = document.getElementById('timer').innerText;
+            const finalTimeVal = parseFloat(finalTimeStr.replace('s',''));
+            const name = document.getElementById('p-name').value;
+            
+            // 儲存分數
+            let list = JSON.parse(localStorage.getItem('steam_rank') || "[]");
+            list.push({name, time: finalTimeVal});
+            list.sort((a,b) => a.time - b.time);
+            localStorage.setItem('steam_rank', JSON.stringify(list.slice(0, 10)));
+            
+            // 更新 UI
+            updateLeaderboardUI();
+            
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-end').classList.remove('hidden');
+            document.getElementById('final-stat').innerText = "最終校準耗時: " + finalTimeStr;
+        }
+
         function quitGame() {
             if(confirm("⚠️ 蒸汽壓力正在流失！你確定要放棄目前的同步並返回大廳嗎？")) {
                 clearInterval(timerInterval);
@@ -268,31 +306,30 @@
                 lobbyBgm.play();
                 document.getElementById('screen-game').classList.add('hidden');
                 document.getElementById('screen-login').classList.remove('hidden');
+                updateLeaderboardUI();
             }
-        }
-
-        function finishGame() {
-            clearInterval(timerInterval);
-            const finalTime = document.getElementById('timer').innerText;
-            const name = document.getElementById('p-name').value;
-            
-            let list = JSON.parse(localStorage.getItem('steam_rank') || "[]");
-            list.push({name, time: parseFloat(finalTime.replace('s',''))});
-            list.sort((a,b) => a.time - b.time);
-            localStorage.setItem('steam_rank', JSON.stringify(list.slice(0, 10)));
-            
-            document.getElementById('screen-game').classList.add('hidden');
-            document.getElementById('screen-end').classList.remove('hidden');
-            document.getElementById('final-stat').innerText = "耗時: " + finalTime;
         }
 
         function updateLeaderboardUI() {
             const list = JSON.parse(localStorage.getItem('steam_rank') || "[]");
-            const container = document.getElementById('leader-board-list');
-            if(list.length === 0) return;
-            container.innerHTML = '<p style="text-align:center; color:var(--bronze);">— 頂尖紀錄 —</p>';
-            list.slice(0, 3).forEach((item, idx) => {
-                container.innerHTML += `<div style="display:flex; justify-content:space-between; padding:2px 20px;"><span>#${idx+1} ${item.name}</span><span>${item.time}s</span></div>`;
+            const containers = ['lobby-rank', 'end-rank'];
+            
+            containers.forEach(id => {
+                const el = document.getElementById(id);
+                if(list.length === 0) {
+                    el.innerHTML = '<div class="rank-title">暫無紀錄 (NO DATA)</div>';
+                    return;
+                }
+                
+                let html = '<div class="rank-title">🏅 蒸汽核心同步排行榜 🏅</div>';
+                list.slice(0, 5).forEach((item, idx) => {
+                    html += `
+                        <div class="rank-item">
+                            <span class="rank-name">${idx+1}. ${item.name}</span>
+                            <span class="rank-time">${item.time.toFixed(2)}s</span>
+                        </div>`;
+                });
+                el.innerHTML = html;
             });
         }
     </script>
