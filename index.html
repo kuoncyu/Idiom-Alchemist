@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>成語煉金術：蒸氣核心重啟</title>
+    <title>成語煉金術：精密校準版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Noto+Serif+TC:wght@700&display=swap" rel="stylesheet">
     <style>
@@ -21,14 +21,16 @@
         }
 
         #main-container {
-            width: 920px; background: #1a1510; border: 8px double var(--bronze);
+            width: 920px; min-height: 600px; background: #1a1510; border: 8px double var(--bronze);
             padding: 30px; position: relative; border-radius: 10px;
             box-shadow: 0 0 50px rgba(0,0,0,0.9), inset 0 0 30px rgba(205, 127, 50, 0.1);
+            display: flex; flex-direction: column; justify-content: center;
         }
 
         h1 {
-            font-family: 'Special Elite', system-ui; font-size: 3rem; color: var(--gold);
-            text-align: center; margin: 0 0 15px 0; letter-spacing: 3px;
+            font-family: 'Special Elite', system-ui; font-size: 3.5rem; color: var(--gold);
+            text-align: center; margin: 0 0 20px 0; letter-spacing: 5px;
+            text-shadow: 0 0 20px rgba(255, 204, 0, 0.5);
         }
 
         /* 虛擬鍵盤 */
@@ -42,15 +44,22 @@
         .key:active { transform: scale(0.95); background: var(--gold); color: #000; }
         .key.wide { grid-column: span 2; background: #5a221a; color: #fff; }
 
-        /* 排行榜 */
-        .leaderboard {
-            background: rgba(0,0,0,0.5); border: 2px solid var(--iron);
-            margin-top: 15px; padding: 10px; border-radius: 5px; max-height: 120px; overflow-y: auto;
+        /* 難度調整按鈕專屬樣式 */
+        .diff-btn {
+            background: #2b231a; border: 2px solid var(--iron); color: #888;
+            padding: 10px 20px; cursor: pointer; font-family: 'Special Elite';
+            font-weight: bold; font-size: 1.1rem; transition: 0.3s;
         }
-        .leader-item {
-            display: flex; justify-content: space-between; padding: 5px 15px;
-            border-bottom: 1px solid #333; font-family: 'Special Elite'; color: var(--steam-blue);
+        .diff-btn.active {
+            border-color: var(--gold); background: var(--bronze); color: white;
+            box-shadow: 0 0 15px var(--bronze);
         }
+
+        .status-panel {
+            display: flex; justify-content: space-between; border-bottom: 2px solid var(--bronze);
+            padding-bottom: 10px; margin-bottom: 20px; align-items: center;
+        }
+        .timer { font-family: 'Special Elite'; font-size: 2.5rem; color: var(--steam-blue); }
 
         /* 碎片樣式 */
         .chip {
@@ -60,37 +69,39 @@
             border-radius: 3px; box-shadow: 3px 3px 0px #000;
         }
 
-        .status-panel {
-            display: flex; justify-content: space-between; border-bottom: 2px solid var(--bronze);
-            padding-bottom: 10px; margin-bottom: 20px; align-items: center;
-        }
-        .timer { font-family: 'Special Elite'; font-size: 2.5rem; color: var(--steam-blue); }
-
-        /* 按鈕樣式 */
         .btn-action {
             width: 100%; background: linear-gradient(var(--bronze), var(--brass));
             border: none; border-bottom: 5px solid #5a3e1a; color: white;
-            font-size: 1.8rem; padding: 15px; cursor: pointer; font-weight: bold;
+            font-size: 1.8rem; padding: 20px; cursor: pointer; font-weight: bold;
         }
         .btn-action:hover { filter: brightness(1.2); }
 
-        /* 返回按鈕 (小而精緻) */
         .btn-back {
             background: #5a221a; border: 1px solid var(--danger); color: white;
             padding: 5px 15px; cursor: pointer; font-family: 'Special Elite';
             font-size: 0.9rem; margin-bottom: 10px;
         }
 
-        .hidden { display: none; }
+        .hidden { display: none !important; }
         .correct-burst { animation: burst 0.4s ease-out; }
         @keyframes burst { 0% { box-shadow: 0 0 0px var(--steam-blue); } 100% { box-shadow: 0 0 60px var(--steam-blue); } }
+        
+        .start-gear { font-size: 8rem; color: var(--bronze); opacity: 0.3; animation: spin 10s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
     <div id="main-container">
-        <div id="screen-login">
-            <h1>⚙️ LOGOS FORGE ⚙️</h1>
+        <div id="screen-start" style="text-align: center;">
+            <div class="start-gear">⚙️</div>
+            <h1>LOGOS FORGE</h1>
+            <p style="color: var(--bronze); margin-bottom: 40px; font-size: 1.2rem;">— STEAM POWERED SYNC ENGINE —</p>
+            <button class="btn-action" onclick="enterLobby()">啟動核心系統 (INITIALIZE)</button>
+        </div>
+
+        <div id="screen-login" class="hidden">
+            <h1>⚙️ 大廳管理 ⚙️</h1>
             <div style="text-align:center; margin-bottom:10px;">
                 <input type="text" id="p-name" readonly placeholder="IDENT-ID" 
                        style="background:#000; border:2px solid var(--bronze); color:var(--gold); padding:10px; font-size:2rem; width:80%; text-align:center;">
@@ -98,16 +109,16 @@
             
             <div class="keyboard" id="kb-container"></div>
 
-            <div style="display:flex; justify-content:center; gap:10px; margin:15px 0;">
-                <button class="key" onclick="setDiff(3, this)">低壓(3)</button>
-                <button class="key" style="background:var(--bronze); color:white" id="def-diff" onclick="setDiff(4, this)">常壓(4)</button>
-                <button class="key" onclick="setDiff(5, this)">高壓(5)</button>
-                <button class="key" onclick="setDiff(6, this)">超壓(6)</button>
+            <p style="text-align:center; color:var(--bronze); margin: 10px 0;">壓力輸出等級 (DIFFICULTY)</p>
+            <div style="display:flex; justify-content:center; gap:10px; margin-bottom:20px;">
+                <button class="diff-btn" onclick="setDiff(3, this)">低壓(3)</button>
+                <button class="diff-btn active" id="def-diff" onclick="setDiff(4, this)">常壓(4)</button>
+                <button class="diff-btn" onclick="setDiff(5, this)">高壓(5)</button>
+                <button class="diff-btn" onclick="setDiff(6, this)">超壓(6)</button>
             </div>
 
-            <button class="btn-action" onclick="startGame()">核心點火 (START)</button>
-            
-            <div class="leaderboard" id="leader-board-list"></div>
+            <button class="btn-action" onclick="startGame()">同步程序啟動 (START)</button>
+            <div id="leader-board-list" style="margin-top:20px; font-size:0.8rem; color:var(--iron);"></div>
         </div>
 
         <div id="screen-game" class="hidden">
@@ -121,7 +132,7 @@
                     <span id="lvl-tag" style="color:var(--bronze)">LVL: 1/10</span>
                 </div>
             </div>
-            <div id="drop-zone" style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center; min-height:180px; align-items:center;"></div>
+            <div id="drop-zone" style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center; min-height:220px; align-items:center;"></div>
             <button class="btn-action" onclick="verifyLogic()">文字同步 (SYNC)</button>
         </div>
 
@@ -146,34 +157,44 @@
         const lobbyBgm = document.getElementById('lobby-bgm');
         const gameBgm = document.getElementById('game-bgm');
 
-        // 音量初始化
         lobbyBgm.volume = 0.4;
         gameBgm.volume = 0.3;
 
-        // --- 虛擬音效 (放大音量) ---
         function playSfx(win) {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = win ? 'triangle' : 'sawtooth';
             osc.frequency.setValueAtTime(win ? 220 : 110, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.2, audioCtx.currentTime); // 調大音效
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime); 
             gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.6);
             osc.connect(gain); gain.connect(audioCtx.destination);
             osc.start(); osc.stop(audioCtx.currentTime + 0.6);
         }
 
-        // --- 鍵盤與大廳音樂觸發 ---
+        function enterLobby() {
+            playSfx(true);
+            document.getElementById('screen-start').classList.add('hidden');
+            document.getElementById('screen-login').classList.remove('hidden');
+            lobbyBgm.currentTime = 0;
+            lobbyBgm.play().catch(() => {});
+            updateLeaderboardUI();
+        }
+
+        // --- 難度切換修正 ---
+        function setDiff(v, el) {
+            playSfx(true);
+            diff = v;
+            document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        // --- 虛擬鍵盤 ---
         const keys = "QWERTYUIOPASDFGHJKLZXCVBNM".split("");
         const kb = document.getElementById('kb-container');
         keys.forEach(k => {
             const b = document.createElement('div');
             b.className = 'key'; b.innerText = k;
-            b.onclick = () => { 
-                playSfx(true); 
-                document.getElementById('p-name').value += k;
-                // 瀏覽器通常阻擋自動播放，點擊鍵盤時啟動大廳音樂
-                if(lobbyBgm.paused) lobbyBgm.play(); 
-            };
+            b.onclick = () => { playSfx(true); document.getElementById('p-name').value += k; };
             kb.appendChild(b);
         });
         const del = document.createElement('div');
@@ -181,47 +202,19 @@
         del.onclick = () => { let v = document.getElementById('p-name').value; document.getElementById('p-name').value = v.slice(0,-1); };
         kb.appendChild(del);
 
-        // --- 排行榜 ---
-        function updateLeaderboardUI() {
-            const list = JSON.parse(localStorage.getItem('steam_rank') || "[]");
-            const container = document.getElementById('leader-board-list');
-            container.innerHTML = '<div style="text-align:center; color:var(--bronze); font-size:0.8rem;">歷史最佳紀錄 (RANKING)</div>';
-            list.slice(0, 3).forEach((item, idx) => {
-                container.innerHTML += `<div class="leader-item"><span>#${idx+1} ${item.name}</span><span>${item.time}s</span></div>`;
-            });
-        }
-        updateLeaderboardUI();
-
-        function saveScore(name, time) {
-            let list = JSON.parse(localStorage.getItem('steam_rank') || "[]");
-            list.push({name, time: parseFloat(time)});
-            list.sort((a,b) => a.time - b.time);
-            localStorage.setItem('steam_rank', JSON.stringify(list.slice(0, 10)));
-        }
-
-        // --- 遊戲核心 ---
-        function setDiff(v, el) {
-            diff = v;
-            document.querySelectorAll('#screen-login .key').forEach(b => {
-                if(!b.classList.contains('wide')) b.style.background = "";
-            });
-            el.style.background = "var(--bronze)"; el.style.color = "white";
-        }
-
         function startGame() {
             const name = document.getElementById('p-name').value;
             if(!name) return alert("請輸入煉金師代號！");
             
-            // 音樂切換
             lobbyBgm.pause();
-            gameBgm.currentTime = 0; // 核心要求：重頭開始
+            gameBgm.currentTime = 0; // 戰鬥音樂重新開始
             gameBgm.play();
 
             document.getElementById('screen-login').classList.add('hidden');
             document.getElementById('screen-game').classList.remove('hidden');
             document.getElementById('user-tag').innerText = "煉金師: " + name;
 
-            step = 0; // 重置等級
+            step = 0;
             quests = idiomData.sort(() => 0.5 - Math.random()).slice(0, 10);
             timerStart = Date.now();
             timerInterval = setInterval(() => {
@@ -236,7 +229,8 @@
             const raw = quests[step];
             document.getElementById('lvl-tag').innerText = `CORE LVL: ${step + 1}/10`;
 
-            let len = Math.floor(raw.length / diff);
+            // 確保難度正確應用
+            let len = Math.max(1, Math.floor(raw.length / diff));
             let chunks = [];
             for(let i=0; i<diff; i++) {
                 chunks.push(i === diff-1 ? raw.substring(i*len) : raw.substring(i*len, (i+1)*len));
@@ -281,12 +275,25 @@
             clearInterval(timerInterval);
             const finalTime = document.getElementById('timer').innerText;
             const name = document.getElementById('p-name').value;
-            saveScore(name, finalTime.replace('s', ''));
+            
+            let list = JSON.parse(localStorage.getItem('steam_rank') || "[]");
+            list.push({name, time: parseFloat(finalTime.replace('s',''))});
+            list.sort((a,b) => a.time - b.time);
+            localStorage.setItem('steam_rank', JSON.stringify(list.slice(0, 10)));
             
             document.getElementById('screen-game').classList.add('hidden');
             document.getElementById('screen-end').classList.remove('hidden');
             document.getElementById('final-stat').innerText = "耗時: " + finalTime;
-            updateLeaderboardUI();
+        }
+
+        function updateLeaderboardUI() {
+            const list = JSON.parse(localStorage.getItem('steam_rank') || "[]");
+            const container = document.getElementById('leader-board-list');
+            if(list.length === 0) return;
+            container.innerHTML = '<p style="text-align:center; color:var(--bronze);">— 頂尖紀錄 —</p>';
+            list.slice(0, 3).forEach((item, idx) => {
+                container.innerHTML += `<div style="display:flex; justify-content:space-between; padding:2px 20px;"><span>#${idx+1} ${item.name}</span><span>${item.time}s</span></div>`;
+            });
         }
     </script>
 </body>
