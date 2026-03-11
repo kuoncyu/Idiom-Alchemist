@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>成語煉金術：顯影增益版</title>
+    <title>成語煉金術：分級排名版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Noto+Serif+TC:wght@700&display=swap" rel="stylesheet">
     <style>
@@ -21,7 +21,7 @@
         }
 
         #main-container {
-            width: 920px; min-height: 650px; background: #1a1510; border: 8px double var(--bronze);
+            width: 920px; min-height: 680px; background: #1a1510; border: 8px double var(--bronze);
             padding: 30px; position: relative; border-radius: 10px;
             box-shadow: 0 0 50px rgba(0,0,0,0.9), inset 0 0 30px rgba(205, 127, 50, 0.1);
             display: flex; flex-direction: column; justify-content: center;
@@ -33,7 +33,6 @@
             text-shadow: 0 0 20px rgba(255, 204, 0, 0.5);
         }
 
-        /* 虛擬鍵盤 */
         .keyboard { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; margin: 15px auto; max-width: 700px; }
         .key {
             background: linear-gradient(145deg, #443322, #221a10);
@@ -44,7 +43,6 @@
         .key:active { transform: scale(0.95); background: var(--gold); color: #000; }
         .key.wide { grid-column: span 2; background: #5a221a; color: #fff; }
 
-        /* 難度調整 */
         .diff-btn {
             background: #2b231a; border: 2px solid var(--iron); color: #888;
             padding: 10px 20px; cursor: pointer; font-family: 'Special Elite';
@@ -55,19 +53,15 @@
             box-shadow: 0 0 15px var(--bronze);
         }
 
-        /* 排行榜視覺強化 */
         .rank-container {
-            background: rgba(0, 0, 0, 0.6);
-            border: 2px solid var(--bronze);
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.6); border: 2px solid var(--bronze);
+            padding: 15px; margin-top: 20px; border-radius: 8px;
             box-shadow: inset 0 0 20px rgba(205, 127, 50, 0.2);
         }
         .rank-title {
             text-align: center; color: var(--gold); font-size: 1.2rem;
             margin-bottom: 10px; border-bottom: 1px solid var(--iron);
-            padding-bottom: 5px; letter-spacing: 2px;
+            padding-bottom: 5px; letter-spacing: 2px; font-weight: bold;
         }
         .rank-item {
             display: flex; justify-content: space-between; padding: 6px 15px;
@@ -77,7 +71,6 @@
         .rank-name { color: #ffffff; text-shadow: 0 0 5px rgba(255,255,255,0.3); }
         .rank-time { color: var(--steam-blue); font-weight: bold; }
 
-        /* 遊戲組件 */
         .chip {
             background: linear-gradient(135deg, #4b3621, #2b1d0e);
             border: 2px solid var(--bronze); color: var(--gold);
@@ -134,7 +127,6 @@
             </div>
 
             <button class="btn-action" onclick="startGame()">同步程序啟動 (START)</button>
-            
             <div class="rank-container" id="lobby-rank"></div>
         </div>
 
@@ -155,10 +147,8 @@
 
         <div id="screen-end" class="hidden">
             <h1 style="color:var(--steam-blue)">校準完成！</h1>
-            <p id="final-stat" style="text-align:center; font-size:2.5rem; color:var(--gold); margin-bottom: 10px;"></p>
-            
+            <p id="final-stat" style="text-align:center; font-size:2.2rem; color:var(--gold); margin-bottom: 10px;"></p>
             <div class="rank-container" id="end-rank"></div>
-            
             <button class="btn-action" style="margin-top:20px;" onclick="location.reload()">重新啟動動力核心</button>
         </div>
     </div>
@@ -197,17 +187,18 @@
             document.getElementById('screen-login').classList.remove('hidden');
             lobbyBgm.currentTime = 0;
             lobbyBgm.play().catch(() => {});
-            updateLeaderboardUI();
+            updateLeaderboardUI(diff); // 初始化顯示常壓(4)排名
         }
 
+        // --- 難度切換與即時排名顯示 ---
         function setDiff(v, el) {
             playSfx(true);
             diff = v;
             document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
             el.classList.add('active');
+            updateLeaderboardUI(diff); // 切換難度後立刻刷新排行榜
         }
 
-        // --- 虛擬鍵盤 ---
         const keys = "QWERTYUIOPASDFGHJKLZXCVBNM".split("");
         const kb = document.getElementById('kb-container');
         keys.forEach(k => {
@@ -246,7 +237,7 @@
             const zone = document.getElementById('drop-zone');
             zone.innerHTML = '';
             const raw = quests[step];
-            document.getElementById('lvl-tag').innerText = `CORE LVL: ${step + 1}/10`;
+            document.getElementById('lvl-tag').innerText = `CORE LVL: ${step + 1}/10 (LV.${diff})`;
 
             let len = Math.max(1, Math.floor(raw.length / diff));
             let chunks = [];
@@ -284,18 +275,20 @@
             const finalTimeVal = parseFloat(finalTimeStr.replace('s',''));
             const name = document.getElementById('p-name').value;
             
-            // 儲存分數
-            let list = JSON.parse(localStorage.getItem('steam_rank') || "[]");
+            // 根據當前難度存儲對應的 key
+            const storageKey = `steam_rank_${diff}`;
+            let list = JSON.parse(localStorage.getItem(storageKey) || "[]");
             list.push({name, time: finalTimeVal});
             list.sort((a,b) => a.time - b.time);
-            localStorage.setItem('steam_rank', JSON.stringify(list.slice(0, 10)));
+            localStorage.setItem(storageKey, JSON.stringify(list.slice(0, 10)));
             
-            // 更新 UI
-            updateLeaderboardUI();
+            updateLeaderboardUI(diff); // 更新數據
             
             document.getElementById('screen-game').classList.add('hidden');
             document.getElementById('screen-end').classList.remove('hidden');
-            document.getElementById('final-stat').innerText = "最終校準耗時: " + finalTimeStr;
+            
+            const diffLabels = {3:'低壓', 4:'常壓', 5:'高壓', 6:'超壓'};
+            document.getElementById('final-stat').innerText = `[${diffLabels[diff]}] 校準耗時: ${finalTimeStr}`;
         }
 
         function quitGame() {
@@ -306,29 +299,33 @@
                 lobbyBgm.play();
                 document.getElementById('screen-game').classList.add('hidden');
                 document.getElementById('screen-login').classList.remove('hidden');
-                updateLeaderboardUI();
+                updateLeaderboardUI(diff);
             }
         }
 
-        function updateLeaderboardUI() {
-            const list = JSON.parse(localStorage.getItem('steam_rank') || "[]");
+        function updateLeaderboardUI(targetDiff) {
+            const storageKey = `steam_rank_${targetDiff}`;
+            const list = JSON.parse(localStorage.getItem(storageKey) || "[]");
+            const diffLabels = {3:'低壓', 4:'常壓', 5:'高壓', 6:'超壓'};
             const containers = ['lobby-rank', 'end-rank'];
             
             containers.forEach(id => {
                 const el = document.getElementById(id);
-                if(list.length === 0) {
-                    el.innerHTML = '<div class="rank-title">暫無紀錄 (NO DATA)</div>';
-                    return;
-                }
+                if(!el) return;
                 
-                let html = '<div class="rank-title">🏅 蒸汽核心同步排行榜 🏅</div>';
-                list.slice(0, 5).forEach((item, idx) => {
-                    html += `
-                        <div class="rank-item">
-                            <span class="rank-name">${idx+1}. ${item.name}</span>
-                            <span class="rank-time">${item.time.toFixed(2)}s</span>
-                        </div>`;
-                });
+                let html = `<div class="rank-title">🏅 ${diffLabels[targetDiff]}等級排行榜 🏅</div>`;
+                
+                if(list.length === 0) {
+                    html += `<div style="text-align:center; padding: 20px; color:#555;">暫無同步紀錄 (VOID)</div>`;
+                } else {
+                    list.slice(0, 5).forEach((item, idx) => {
+                        html += `
+                            <div class="rank-item">
+                                <span class="rank-name">${idx+1}. ${item.name}</span>
+                                <span class="rank-time">${item.time.toFixed(2)}s</span>
+                            </div>`;
+                    });
+                }
                 el.innerHTML = html;
             });
         }
