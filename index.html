@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>成語煉金術：分級排名版</title>
+    <title>成語煉金術：穩定運轉版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Noto+Serif+TC:wght@700&display=swap" rel="stylesheet">
     <style>
@@ -71,11 +71,13 @@
         .rank-name { color: #ffffff; text-shadow: 0 0 5px rgba(255,255,255,0.3); }
         .rank-time { color: var(--steam-blue); font-weight: bold; }
 
+        /* 碎片樣式：增加不被選取的屬性 */
         .chip {
             background: linear-gradient(135deg, #4b3621, #2b1d0e);
             border: 2px solid var(--bronze); color: var(--gold);
             padding: 15px 25px; font-size: 1.5rem; cursor: grab;
             border-radius: 3px; box-shadow: 3px 3px 0px #000;
+            user-select: none;
         }
 
         .btn-action {
@@ -115,9 +117,7 @@
                 <input type="text" id="p-name" readonly placeholder="IDENT-ID" 
                        style="background:#000; border:2px solid var(--bronze); color:var(--gold); padding:10px; font-size:2rem; width:80%; text-align:center;">
             </div>
-            
             <div class="keyboard" id="kb-container"></div>
-
             <p style="text-align:center; color:var(--bronze); margin: 10px 0;">壓力輸出等級 (DIFFICULTY)</p>
             <div style="display:flex; justify-content:center; gap:10px; margin-bottom:20px;">
                 <button class="diff-btn" onclick="setDiff(3, this)">低壓(3)</button>
@@ -125,7 +125,6 @@
                 <button class="diff-btn" onclick="setDiff(5, this)">高壓(5)</button>
                 <button class="diff-btn" onclick="setDiff(6, this)">超壓(6)</button>
             </div>
-
             <button class="btn-action" onclick="startGame()">同步程序啟動 (START)</button>
             <div class="rank-container" id="lobby-rank"></div>
         </div>
@@ -162,11 +161,11 @@
         let step = 0;
         let quests = [];
         let timerStart, timerInterval;
+        let sortableInstance = null; // 拖曳引擎實例化
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         
         const lobbyBgm = document.getElementById('lobby-bgm');
         const gameBgm = document.getElementById('game-bgm');
-
         lobbyBgm.volume = 0.4;
         gameBgm.volume = 0.3;
 
@@ -181,22 +180,32 @@
             osc.start(); osc.stop(audioCtx.currentTime + 0.6);
         }
 
+        // --- 初始化拖曳引擎 (關鍵修正：只運行一次) ---
+        function initSortable() {
+            if (!sortableInstance) {
+                const zone = document.getElementById('drop-zone');
+                sortableInstance = new Sortable(zone, {
+                    animation: 150,
+                    ghostClass: 'sortable-ghost'
+                });
+            }
+        }
+
         function enterLobby() {
             playSfx(true);
             document.getElementById('screen-start').classList.add('hidden');
             document.getElementById('screen-login').classList.remove('hidden');
             lobbyBgm.currentTime = 0;
             lobbyBgm.play().catch(() => {});
-            updateLeaderboardUI(diff); // 初始化顯示常壓(4)排名
+            updateLeaderboardUI(diff);
         }
 
-        // --- 難度切換與即時排名顯示 ---
         function setDiff(v, el) {
             playSfx(true);
             diff = v;
             document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
             el.classList.add('active');
-            updateLeaderboardUI(diff); // 切換難度後立刻刷新排行榜
+            updateLeaderboardUI(diff);
         }
 
         const keys = "QWERTYUIOPASDFGHJKLZXCVBNM".split("");
@@ -224,6 +233,8 @@
             document.getElementById('screen-game').classList.remove('hidden');
             document.getElementById('user-tag').innerText = "煉金師: " + name;
 
+            initSortable(); // 確保進入遊戲時引擎已點火
+
             step = 0;
             quests = idiomData.sort(() => 0.5 - Math.random()).slice(0, 10);
             timerStart = Date.now();
@@ -235,7 +246,7 @@
 
         function loadNext() {
             const zone = document.getElementById('drop-zone');
-            zone.innerHTML = '';
+            zone.innerHTML = ''; // 清除舊碎片
             const raw = quests[step];
             document.getElementById('lvl-tag').innerText = `CORE LVL: ${step + 1}/10 (LV.${diff})`;
 
@@ -249,7 +260,7 @@
                 div.className = 'chip'; div.innerText = t;
                 zone.appendChild(div);
             });
-            new Sortable(zone, { animation: 150 });
+            // 注意：不再此處重新 init Sortable，它會自動抓取 zone 裡面的新元素
         }
 
         function verifyLogic() {
@@ -275,14 +286,13 @@
             const finalTimeVal = parseFloat(finalTimeStr.replace('s',''));
             const name = document.getElementById('p-name').value;
             
-            // 根據當前難度存儲對應的 key
             const storageKey = `steam_rank_${diff}`;
             let list = JSON.parse(localStorage.getItem(storageKey) || "[]");
             list.push({name, time: finalTimeVal});
             list.sort((a,b) => a.time - b.time);
             localStorage.setItem(storageKey, JSON.stringify(list.slice(0, 10)));
             
-            updateLeaderboardUI(diff); // 更新數據
+            updateLeaderboardUI(diff);
             
             document.getElementById('screen-game').classList.add('hidden');
             document.getElementById('screen-end').classList.remove('hidden');
@@ -312,9 +322,7 @@
             containers.forEach(id => {
                 const el = document.getElementById(id);
                 if(!el) return;
-                
                 let html = `<div class="rank-title">🏅 ${diffLabels[targetDiff]}等級排行榜 🏅</div>`;
-                
                 if(list.length === 0) {
                     html += `<div style="text-align:center; padding: 20px; color:#555;">暫無同步紀錄 (VOID)</div>`;
                 } else {
