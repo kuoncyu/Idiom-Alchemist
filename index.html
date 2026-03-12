@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>成語煉金術：全平台適配版</title>
+    <title>成語煉金術：精確切割版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Noto+Serif+TC:wght@700&display=swap" rel="stylesheet">
     <style>
@@ -18,20 +18,16 @@
                               url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
             color: #e0e0e0; margin: 0; font-family: 'Noto Serif TC', serif;
             display: flex; justify-content: center; align-items: center; min-height: 100vh;
-            overflow-x: hidden;
         }
 
-        /* 主容器：由固定寬度改為響應式 */
         #main-container {
             width: 95%; max-width: 920px; min-height: 90vh;
             background: #1a1510; border: 6px double var(--bronze);
             padding: 20px; position: relative; border-radius: 10px;
             box-shadow: 0 0 50px rgba(0,0,0,0.9), inset 0 0 30px rgba(205, 127, 50, 0.1);
-            display: flex; flex-direction: column; justify-content: center;
-            margin: 10px auto; box-sizing: border-box;
+            display: flex; flex-direction: column; justify-content: center; box-sizing: border-box;
         }
 
-        /* 全螢幕切換按鈕 */
         #fullscreen-btn {
             position: absolute; top: 10px; right: 10px;
             background: rgba(184, 115, 51, 0.3); border: 1px solid var(--bronze);
@@ -45,45 +41,49 @@
             text-shadow: 0 0 20px rgba(255, 204, 0, 0.5);
         }
 
-        /* 虛擬鍵盤響應式 */
-        .keyboard { 
-            display: grid; grid-template-columns: repeat(10, 1fr); 
-            gap: 4px; margin: 10px auto; width: 100%; max-width: 700px; 
-        }
+        .keyboard { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin: 10px auto; width: 100%; max-width: 700px; }
         .key {
             background: linear-gradient(145deg, #443322, #221a10);
             border: 1px solid var(--bronze); color: var(--gold);
             padding: clamp(8px, 2vw, 15px) 0; cursor: pointer; font-family: 'Special Elite';
             font-weight: bold; font-size: clamp(0.9rem, 3vw, 1.2rem); text-align: center;
-            user-select: none; touch-action: manipulation;
+            user-select: none;
         }
         .key.wide { grid-column: span 2; background: #5a221a; color: #fff; }
 
-        /* 難度按鈕適配 */
         .diff-btn {
             flex: 1; background: #2b231a; border: 2px solid var(--iron); color: #888;
             padding: 10px 5px; cursor: pointer; font-family: 'Special Elite';
-            font-weight: bold; font-size: 0.9rem; transition: 0.3s; min-width: 60px;
+            font-weight: bold; font-size: 0.9rem; transition: 0.3s;
         }
         .diff-btn.active { border-color: var(--gold); background: var(--bronze); color: white; }
 
-        /* 排行榜視覺 */
-        .rank-container {
-            background: rgba(0, 0, 0, 0.6); border: 2px solid var(--bronze);
-            padding: 10px; margin-top: 15px; border-radius: 8px; font-size: 0.9rem;
-        }
-        .rank-title { text-align: center; color: var(--gold); font-size: 1rem; margin-bottom: 5px; border-bottom: 1px solid var(--iron); }
-        .rank-item { display: flex; justify-content: space-between; padding: 4px 10px; font-family: 'Special Elite'; }
-        .rank-time { color: var(--steam-blue); }
+        .rank-container { background: rgba(0, 0, 0, 0.6); border: 2px solid var(--bronze); padding: 10px; margin-top: 15px; border-radius: 8px; }
+        .rank-title { text-align: center; color: var(--gold); font-size: 1rem; border-bottom: 1px solid var(--iron); padding-bottom: 5px; margin-bottom: 5px;}
+        .rank-item { display: flex; justify-content: space-between; padding: 4px 10px; font-family: 'Special Elite'; font-size: 0.9rem;}
 
-        /* 遊戲碎片：在小螢幕自動調整大小 */
+        .game-area-wrap {
+            display: flex; align-items: flex-end; justify-content: center; flex-wrap: wrap;
+            min-height: 220px; margin: 20px 0; padding: 10px; background: rgba(0,0,0,0.3);
+            border-radius: 8px; border: 1px dashed var(--bronze);
+        }
+        .static-punctuation {
+            font-size: 2rem; color: var(--bronze); font-family: 'Noto Serif TC';
+            text-shadow: 0 0 10px var(--gold); font-weight: bold; margin-bottom: 15px; margin-left: 5px;
+        }
+
         .chip {
             background: linear-gradient(135deg, #4b3621, #2b1d0e);
             border: 2px solid var(--bronze); color: var(--gold);
-            padding: clamp(10px, 3vw, 15px) clamp(15px, 4vw, 25px);
-            font-size: clamp(1.1rem, 4vw, 1.5rem); cursor: grab;
-            border-radius: 3px; box-shadow: 3px 3px 0px #000;
+            padding: 10px 15px; font-size: clamp(1.2rem, 4vw, 1.5rem); cursor: grab;
+            border-radius: 4px; box-shadow: 2px 2px 0px #000;
             user-select: none; touch-action: none; margin: 5px;
+        }
+
+        /* 成語專屬特效，讓它更醒目一點 */
+        .chip.idiom-core {
+            border-color: var(--steam-blue);
+            box-shadow: 0 0 8px rgba(0, 212, 255, 0.3), 2px 2px 0px #000;
         }
 
         .btn-action {
@@ -98,247 +98,271 @@
         }
 
         .hidden { display: none !important; }
-        .start-gear { font-size: clamp(4rem, 15vw, 8rem); color: var(--bronze); opacity: 0.3; animation: spin 10s linear infinite; margin-bottom: 10px; }
+        .start-gear { font-size: 6rem; color: var(--bronze); opacity: 0.3; animation: spin 10s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        /* 手機直屏特殊優化 */
-        @media (max-width: 600px) {
-            #main-container { padding: 15px; min-height: 95vh; }
-            .keyboard { gap: 2px; }
-            .rank-item { font-size: 0.8rem; }
-        }
     </style>
 </head>
 <body>
 
     <div id="main-container">
-        <button id="fullscreen-btn" onclick="toggleFullScreen()">⛶ FULLSCREEN</button>
+        <button id="fullscreen-btn" onclick="toggleFullScreen()">⛶ 全螢幕</button>
 
         <div id="screen-start" style="text-align: center;">
             <div class="start-gear">⚙️</div>
             <h1>LOGOS FORGE</h1>
-            <p style="color: var(--bronze); margin-bottom: 20px; font-size: 0.9rem;">— STEAM POWERED SYNC ENGINE —</p>
-            <button class="btn-action" onclick="enterLobby()">啟動核心系統 (INITIALIZE)</button>
+            <p style="color: var(--bronze); margin-bottom: 20px;">— 情境核心封裝版 —</p>
+            <button class="btn-action" onclick="enterLobby()">啟動核心 (START)</button>
         </div>
 
         <div id="screen-login" class="hidden">
             <h1>⚙️ 大廳管理 ⚙️</h1>
-            <div style="text-align:center; margin-bottom:10px;">
-                <input type="text" id="p-name" readonly placeholder="IDENT-ID" 
-                       style="background:#000; border:2px solid var(--bronze); color:var(--gold); padding:8px; font-size:1.5rem; width:90%; text-align:center;">
-            </div>
-            
+            <input type="text" id="p-name" readonly placeholder="IDENT-ID" 
+                   style="background:#000; border:2px solid var(--bronze); color:var(--gold); padding:8px; font-size:1.5rem; width:100%; text-align:center; box-sizing: border-box;">
             <div class="keyboard" id="kb-container"></div>
-
-            <p style="text-align:center; color:var(--bronze); margin: 5px 0; font-size: 0.8rem;">壓力輸出等級 (DIFFICULTY)</p>
-            <div style="display:flex; flex-wrap: wrap; justify-content:center; gap:5px; margin-bottom:15px;">
+            <div style="display:flex; justify-content:center; gap:5px; margin: 15px 0;">
                 <button class="diff-btn" onclick="setDiff(3, this)">低壓(3)</button>
-                <button class="diff-btn active" id="def-diff" onclick="setDiff(4, this)">常壓(4)</button>
+                <button class="diff-btn active" onclick="setDiff(4, this)">常壓(4)</button>
                 <button class="diff-btn" onclick="setDiff(5, this)">高壓(5)</button>
                 <button class="diff-btn" onclick="setDiff(6, this)">超壓(6)</button>
             </div>
-
-            <button class="btn-action" onclick="startGame()">同步程序啟動 (START)</button>
+            <button class="btn-action" onclick="startGame()">同步程序啟動</button>
             <div class="rank-container" id="lobby-rank"></div>
         </div>
 
         <div id="screen-game" class="hidden">
-            <button class="btn-back" onclick="quitGame()">◀ 返回大廳</button>
-            <div style="display: flex; justify-content: space-between; border-bottom: 2px solid var(--bronze); padding-bottom: 5px; margin-bottom: 10px; align-items: center;">
-                <div id="timer" style="font-family: 'Special Elite'; font-size: 1.8rem; color: var(--steam-blue);">0.00s</div>
-                <div style="text-align:right; font-size: 0.8rem;">
-                    <span id="user-tag" style="color:var(--gold)"></span><br>
-                    <span id="lvl-tag" style="color:var(--bronze)">LVL: 1/10</span>
-                </div>
+            <button class="btn-back" onclick="quitGame()">◀ 終止同步</button>
+            <div style="display: flex; justify-content: space-between; border-bottom: 2px solid var(--bronze);">
+                <div id="timer" style="font-size: 1.8rem; color: var(--steam-blue); font-family: 'Special Elite';">0.00s</div>
+                <div id="lvl-tag" style="color:var(--bronze);">LVL: 1/10</div>
             </div>
-            <div id="drop-zone" style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center; min-height:180px; align-items:center;"></div>
-            <button class="btn-action" onclick="verifyLogic()">文字同步 (SYNC)</button>
+            
+            <div class="game-area-wrap">
+                <div id="drop-zone" style="display:flex; flex-wrap:wrap; justify-content:center; align-items:center;"></div>
+                <div class="static-punctuation">。</div>
+            </div>
+
+            <button class="btn-action" onclick="verifyLogic()">語意同步 (SYNC)</button>
         </div>
 
         <div id="screen-end" class="hidden">
-            <h1 style="color:var(--steam-blue)">校準完成！</h1>
+            <h1 style="color:var(--steam-blue)">校準完成</h1>
             <p id="final-stat" style="text-align:center; font-size:1.5rem; color:var(--gold); margin-bottom: 10px;"></p>
             <div class="rank-container" id="end-rank"></div>
-            <button class="btn-action" style="margin-top:20px;" onclick="location.reload()">重新啟動核心</button>
+            <button class="btn-action" style="margin-top:20px;" onclick="location.reload()">重新啟動</button>
         </div>
     </div>
 
     <audio id="lobby-bgm" loop src="lobby.mp3"></audio>
     <audio id="game-bgm" loop src="bgm.mp3"></audio>
 
-    <script src="data.js"></script>
     <script>
-        let diff = 4;
-        let step = 0;
-        let quests = [];
-        let timerStart, timerInterval;
-        let sortableInstance = null;
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
+        // --- 情境資料庫：包含成語與前後文 ---
+        const sentenceData = [
+            { text: "他做事總是半途而廢，結果一事無成。", idiom: "半途而廢" },
+            { text: "這項工程浩大，不是一朝一夕能完成的。", idiom: "一朝一夕" },
+            { text: "小明上課總是不專心，常常心不在焉。", idiom: "心不在焉" },
+            { text: "遇到困難時，我們應該勇往直前。", idiom: "勇往直前" },
+            { text: "為了考試，他每天夜以繼日地讀書。", idiom: "夜以繼日" },
+            { text: "這幅畫畫得很生動，簡直是栩栩如生。", idiom: "栩栩如生" },
+            { text: "他們兩人的意見南轅北轍，很難達成共識。", idiom: "南轅北轍" },
+            { text: "他為人慷慨，經常慷慨解囊幫助窮人。", idiom: "慷慨解囊" },
+            { text: "這件事已經水落石出，大家都知道了真相。", idiom: "水落石出" },
+            { text: "春天到了，花園裡百花齊放，非常美麗。", idiom: "百花齊放" },
+            { text: "這座山峰高聳入雲，令人嘆為觀止。", idiom: "嘆為觀止" },
+            { text: "他憑著不屈不撓的精神，終於獲得了成功。", idiom: "不屈不撓" }
+        ];
+
+        let diff = 4, step = 0, quests = [];
+        let timerStart, timerInterval, sortableInstance = null;
         const lobbyBgm = document.getElementById('lobby-bgm');
         const gameBgm = document.getElementById('game-bgm');
 
-        // --- 全螢幕功能 ---
         function toggleFullScreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    alert(`無法啟動全螢幕模式: ${err.message}`);
-                });
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
-            }
+            if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(()=>{}); } 
+            else { document.exitFullscreen(); }
         }
 
         function playSfx(win) {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = win ? 'triangle' : 'sawtooth';
-            osc.frequency.setValueAtTime(win ? 220 : 110, audioCtx.currentTime);
+            osc.frequency.setValueAtTime(win ? 440 : 150, audioCtx.currentTime);
             gain.gain.setValueAtTime(0.1, audioCtx.currentTime); 
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
             osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.5);
-        }
-
-        function initSortable() {
-            if (!sortableInstance) {
-                const zone = document.getElementById('drop-zone');
-                sortableInstance = new Sortable(zone, {
-                    animation: 150,
-                    ghostClass: 'sortable-ghost',
-                    delay: 0, 
-                    touchStartThreshold: 5 
-                });
-            }
+            osc.start(); osc.stop(audioCtx.currentTime + 0.3);
         }
 
         function enterLobby() {
-            playSfx(true);
             document.getElementById('screen-start').classList.add('hidden');
             document.getElementById('screen-login').classList.remove('hidden');
-            lobbyBgm.volume = 0.4;
-            lobbyBgm.play().catch(() => {});
+            lobbyBgm.volume = 0.4; lobbyBgm.play().catch(()=>{});
             updateLeaderboardUI(diff);
         }
 
         function setDiff(v, el) {
-            playSfx(true);
-            diff = v;
+            diff = v; playSfx(true);
             document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
             el.classList.add('active');
             updateLeaderboardUI(diff);
         }
 
-        const keys = "QWERTYUIOPASDFGHJKLZXCVBNM".split("");
         const kb = document.getElementById('kb-container');
-        keys.forEach(k => {
-            const b = document.createElement('div');
-            b.className = 'key'; b.innerText = k;
-            b.onclick = () => { playSfx(true); document.getElementById('p-name').value += k; };
-            kb.appendChild(b);
+        "QWERTYUIOPASDFGHJKLZXCVBNM".split("").forEach(k => {
+            const b = document.createElement('div'); b.className='key'; b.innerText=k;
+            b.onclick=()=>{ playSfx(true); document.getElementById('p-name').value+=k;}; kb.appendChild(b);
         });
-        const del = document.createElement('div');
-        del.className = 'key wide'; del.innerText = "DEL";
-        del.onclick = () => { let v = document.getElementById('p-name').value; document.getElementById('p-name').value = v.slice(0,-1); };
+        const del = document.createElement('div'); del.className='key wide'; del.innerText='DEL';
+        del.onclick=()=>{ document.getElementById('p-name').value=document.getElementById('p-name').value.slice(0,-1);};
         kb.appendChild(del);
 
         function startGame() {
-            const name = document.getElementById('p-name').value;
-            if(!name) return alert("請輸入煉金師代號！");
-            
-            lobbyBgm.pause();
-            gameBgm.volume = 0.3;
-            gameBgm.currentTime = 0;
-            gameBgm.play().catch(() => {});
-
+            if(!document.getElementById('p-name').value) return alert("請輸入煉金師代號！");
+            lobbyBgm.pause(); gameBgm.volume = 0.3; gameBgm.play().catch(()=>{});
             document.getElementById('screen-login').classList.add('hidden');
             document.getElementById('screen-game').classList.remove('hidden');
-            document.getElementById('user-tag').innerText = "ID: " + name;
-
-            initSortable();
+            
+            if(!sortableInstance) {
+                sortableInstance = new Sortable(document.getElementById('drop-zone'), { animation: 150, ghostClass: 'sortable-ghost' });
+            }
 
             step = 0;
-            quests = idiomData.sort(() => 0.5 - Math.random()).slice(0, 10);
+            quests = [...sentenceData].sort(() => 0.5 - Math.random()).slice(0, 10);
             timerStart = Date.now();
-            timerInterval = setInterval(() => {
-                document.getElementById('timer').innerText = ((Date.now()-timerStart)/1000).toFixed(2) + "s";
-            }, 50);
+            timerInterval = setInterval(() => { document.getElementById('timer').innerText = ((Date.now()-timerStart)/1000).toFixed(2) + "s"; }, 50);
             loadNext();
+        }
+
+        // --- 字串精準切割演算法 ---
+        function splitStringIntoChunks(str, numChunks) {
+            if (numChunks <= 0 || str.length === 0) return [];
+            if (numChunks >= str.length) return str.split('');
+            
+            let possibleCuts = [];
+            for (let i = 1; i < str.length; i++) possibleCuts.push(i);
+            possibleCuts.sort(() => 0.5 - Math.random());
+            
+            let cutPoints = possibleCuts.slice(0, numChunks - 1).sort((a, b) => a - b);
+            let chunks = [];
+            let last = 0;
+            for (let pt of cutPoints) {
+                chunks.push(str.substring(last, pt));
+                last = pt;
+            }
+            chunks.push(str.substring(last));
+            return chunks;
         }
 
         function loadNext() {
             const zone = document.getElementById('drop-zone');
             zone.innerHTML = '';
-            const raw = quests[step];
-            document.getElementById('lvl-tag').innerText = `CORE: ${step + 1}/10 (LV.${diff})`;
+            
+            const currentQuest = quests[step];
+            document.getElementById('lvl-tag').innerText = `LVL: ${step + 1}/10 (塊數:${diff})`;
 
-            let len = Math.max(1, Math.floor(raw.length / diff));
-            let chunks = [];
-            for(let i=0; i<diff; i++) {
-                chunks.push(i === diff-1 ? raw.substring(i*len) : raw.substring(i*len, (i+1)*len));
+            // 移除末尾句號
+            const cleanText = currentQuest.text.replace(/。$/, '');
+            const idiom = currentQuest.idiom;
+            
+            const idiomIdx = cleanText.indexOf(idiom);
+            const prefix = cleanText.substring(0, idiomIdx);
+            const suffix = cleanText.substring(idiomIdx + idiom.length);
+
+            // 總共需要切出 diff 塊，其中成語佔 1 塊
+            // 所以 prefix 和 suffix 總共要切出 K = diff - 1 塊
+            let K = diff - 1;
+            let validPairs = [];
+
+            // 找出所有符合條件的分割組合 (c1: 前段塊數, c2: 後段塊數)
+            for (let c1 = 0; c1 <= K; c1++) {
+                let c2 = K - c1;
+                let pValid = (prefix.length === 0 && c1 === 0) || (prefix.length > 0 && c1 >= 1 && c1 <= prefix.length);
+                let sValid = (suffix.length === 0 && c2 === 0) || (suffix.length > 0 && c2 >= 1 && c2 <= suffix.length);
+                if (pValid && sValid) {
+                    validPairs.push([c1, c2]);
+                }
             }
-            chunks.sort(() => 0.5 - Math.random()).forEach(t => {
+
+            let pChunks = [], sChunks = [];
+            
+            if (validPairs.length > 0) {
+                // 從合法組合中隨機挑選一種
+                let pair = validPairs[Math.floor(Math.random() * validPairs.length)];
+                pChunks = splitStringIntoChunks(prefix, pair[0]);
+                sChunks = splitStringIntoChunks(suffix, pair[1]);
+            } else {
+                // 如果句子太短無法滿足切割條件，做安全降級
+                pChunks = splitStringIntoChunks(prefix, prefix.length);
+                sChunks = splitStringIntoChunks(suffix, suffix.length);
+            }
+
+            let allChunks = [];
+            pChunks.forEach(t => allChunks.push({ text: t, isIdiom: false }));
+            allChunks.push({ text: idiom, isIdiom: true });
+            sChunks.forEach(t => allChunks.push({ text: t, isIdiom: false }));
+
+            // 渲染至畫面
+            allChunks.sort(() => 0.5 - Math.random()).forEach(chunkData => {
                 const div = document.createElement('div');
-                div.className = 'chip'; div.innerText = t;
+                div.className = chunkData.isIdiom ? 'chip idiom-core' : 'chip';
+                div.innerText = chunkData.text;
                 zone.appendChild(div);
             });
         }
 
         function verifyLogic() {
-            const user = Array.from(document.querySelectorAll('.chip')).map(c => c.innerText).join('');
-            if(user === quests[step]) {
+            const userJoined = Array.from(document.querySelectorAll('.chip')).map(c => c.innerText).join('');
+            const currentQuest = quests[step];
+            const answerNoPunc = currentQuest.text.replace(/。$/, ''); 
+            
+            if(userJoined === answerNoPunc) {
                 playSfx(true);
                 step++;
                 if(step < 10) loadNext(); else finishGame();
             } else {
                 playSfx(false);
-                document.body.style.backgroundColor = "#300";
+                document.body.style.backgroundColor = "#4a0000";
                 setTimeout(() => document.body.style.backgroundColor = "#0a0a0a", 200);
             }
-        }
-
-        function finishGame() {
-            clearInterval(timerInterval);
-            const finalTimeStr = document.getElementById('timer').innerText;
-            const finalTimeVal = parseFloat(finalTimeStr.replace('s',''));
-            const name = document.getElementById('p-name').value;
-            
-            const storageKey = `steam_rank_${diff}`;
-            let list = JSON.parse(localStorage.getItem(storageKey) || "[]");
-            list.push({name, time: finalTimeVal});
-            list.sort((a,b) => a.time - b.time);
-            localStorage.setItem(storageKey, JSON.stringify(list.slice(0, 10)));
-            
-            updateLeaderboardUI(diff);
-            document.getElementById('screen-game').classList.add('hidden');
-            document.getElementById('screen-end').classList.remove('hidden');
-            const labels = {3:'低壓', 4:'常壓', 5:'高壓', 6:'超壓'};
-            document.getElementById('final-stat').innerText = `${labels[diff]}耗時: ${finalTimeStr}`;
         }
 
         function quitGame() {
             if(confirm("確定放棄嗎？")) {
                 clearInterval(timerInterval);
-                gameBgm.pause();
-                lobbyBgm.play();
+                gameBgm.pause(); lobbyBgm.currentTime = 0; lobbyBgm.play();
                 document.getElementById('screen-game').classList.add('hidden');
                 document.getElementById('screen-login').classList.remove('hidden');
-                updateLeaderboardUI(diff);
             }
+        }
+
+        function finishGame() {
+            clearInterval(timerInterval);
+            const timeStr = document.getElementById('timer').innerText;
+            const timeVal = parseFloat(timeStr);
+            const name = document.getElementById('p-name').value;
+            
+            let list = JSON.parse(localStorage.getItem(`steam_rank_${diff}`) || "[]");
+            list.push({name, time: timeVal});
+            list.sort((a,b) => a.time - b.time);
+            localStorage.setItem(`steam_rank_${diff}`, JSON.stringify(list.slice(0, 5)));
+            
+            updateLeaderboardUI(diff);
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-end').classList.remove('hidden');
+            const labels = {3:'低壓', 4:'常壓', 5:'高壓', 6:'超壓'};
+            document.getElementById('final-stat').innerText = `[${labels[diff]}] 耗時: ${timeStr}`;
         }
 
         function updateLeaderboardUI(targetDiff) {
             const list = JSON.parse(localStorage.getItem(`steam_rank_${targetDiff}`) || "[]");
             const labels = {3:'低壓', 4:'常壓', 5:'高壓', 6:'超壓'};
             ['lobby-rank', 'end-rank'].forEach(id => {
-                const el = document.getElementById(id);
-                if(!el) return;
+                const el = document.getElementById(id); if(!el) return;
                 let html = `<div class="rank-title">🏅 ${labels[targetDiff]}排行榜 🏅</div>`;
-                if(list.length === 0) html += `<div style="text-align:center;padding:10px;color:#555;">VOID</div>`;
-                else list.slice(0, 5).forEach((item, idx) => {
-                    html += `<div class="rank-item"><span>${idx+1}. ${item.name}</span><span class="rank-time">${item.time.toFixed(2)}s</span></div>`;
+                if(list.length === 0) html += `<div style="text-align:center;color:#555;padding:10px;">VOID</div>`;
+                else list.forEach((item, idx) => {
+                    html += `<div class="rank-item"><span>${idx+1}. ${item.name}</span><span style="color:var(--steam-blue)">${item.time.toFixed(2)}s</span></div>`;
                 });
                 el.innerHTML = html;
             });
